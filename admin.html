@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Reservierungssystem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .security-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .login-header {
+            background: linear-gradient(to right, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .login-header i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .login-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .login-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .login-form {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .checkbox-group input {
+            width: auto;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .login-btn:hover {
+            background: linear-gradient(to right, #45a049, #3d8b40);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .login-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .login-footer {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #fcc;
+        }
+        
+        .back-link {
+            margin-top: 20px;
+            text-align: center;
+            padding: 0 30px 30px;
+        }
+        
+        .back-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .loading i {
+            font-size: 40px;
+            color: #3498db;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .login-success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .failed-attempts {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .failed-attempts.warning {
+            color: #e74c3c;
+        }
+        
+        @media (max-width: 480px) {
+            .login-form {
+                padding: 20px;
+            }
+            
+            .login-header {
+                padding: 20px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="loading" id="loading">
+        <i class="fas fa-spinner"></i>
+        <p>Login wird überprüft...</p>
+    </div>
+    
+    <div class="login-container">
+        <div class="security-badge">
+            <i class="fas fa-shield-alt"></i> Sichere Verbindung
+        </div>
+        
+        <div class="login-header">
+            <i class="fas fa-lock"></i>
+            <h1>Admin Login</h1>
+            <p>Reservierungssystem Verwaltung</p>
+        </div>
+        
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="username"><i class="fas fa-user"></i> Benutzername</label>
+                <input type="text" id="username" name="username" required 
+                       placeholder="admin" autocomplete="username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password"><i class="fas fa-key"></i> Passwort</label>
+                <input type="password" id="password" name="password" required 
+                       placeholder="••••••••" autocomplete="current-password">
+                <div class="failed-attempts" id="failedAttempts">
+                    <i class="fas fa-info-circle"></i>
+                    <span>0 fehlgeschlagene Versuche</span>
+                </div>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="remember">
+                <label for="remember">Angemeldet bleiben</label>
+            </div>
+            
+            <button type="submit" class="login-btn" id="loginButton">
+                <i class="fas fa-sign-in-alt"></i> Einloggen
+            </button>
+            
+            <div class="login-success" id="loginSuccess">
+                <i class="fas fa-check-circle"></i>
+                <span>Login erfolgreich! Weiterleitung...</span>
+            </div>
+            
+            <div class="login-footer">
+                <p><i class="fas fa-info-circle"></i> Standard-Login: admin / admin123</p>
+                <p><small>Bitte ändern Sie das Passwort nach dem ersten Login im Admin-Panel!</small></p>
+            </div>
+        </form>
+        
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Falscher Benutzername oder Passwort!</span>
+        </div>
+        
+        <div class="back-link">
+            <a href="index.html"><i class="fas fa-arrow-left"></i> Zurück zur Website</a>
+        </div>
+    </div>
+
+    <script>
+        // SICHERER ADMIN LOGIN MIT BRUTE-FORCE SCHUTZ
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Sicherer Admin Login geladen');
+            
+            const form = document.getElementById('loginForm');
+            const error = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginButton');
+            const loading = document.getElementById('loading');
+            const success = document.getElementById('loginSuccess');
+            const failedAttemptsEl = document.getElementById('failedAttempts');
+            
+            // Login-Daten aus localStorage oder Standardwerte
+            let loginConfig = JSON.parse(localStorage.getItem('loginConfig')) || {
+                username: 'admin',
+                password: 'admin123',
+                failedAttempts: 0,
+                lastFailedAttempt: null,
+                lockedUntil: null
+            };
+            
+            // Prüfe auf Lock
+            checkLoginLock();
+            
+            // Fehlgeschlagene Versuche anzeigen
+            updateFailedAttemptsDisplay();
+            
+            // Prüfen ob bereits eingeloggt
+            const isAlreadyLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+            const loginTime = localStorage.getItem('adminLoginTime');
+            
+            if (isAlreadyLoggedIn && loginTime) {
+                const loginDate = new Date(loginTime);
+                const now = new Date();
+                const hoursDiff = (now - loginDate) / (1000 * 60 * 60);
+                
+                if (hoursDiff < 2) {
+                    console.log('Bereits eingeloggt, weiterleiten...');
+                    showSuccessAndRedirect();
+                    return;
+                } else {
+                    localStorage.removeItem('adminLoggedIn');
+                    localStorage.removeItem('adminLoginTime');
+                }
+            }
+            
+            // Formular Handler
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('Login versuch gestartet');
+                
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                
+                // Validierung
+                if (!username || !password) {
+                    showError('Bitte füllen Sie alle Felder aus!');
+                    return;
+                }
+                
+                // Lock prüfen
+                if (isLoginLocked()) {
+                    showError('Zu viele fehlgeschlagene Versuche. Bitte warten Sie 15 Minuten.');
+                    return;
+                }
+                
+                // Ladeanimation zeigen
+                loading.style.display = 'flex';
+                error.style.display = 'none';
+                loginBtn.disabled = true;
+                
+                // Kurze Verzögerung für UX
+                setTimeout(() => {
+                    handleLogin(username, password);
+                }, 500);
+                
+                return false;
+            });
+            
+            function handleLogin(username, password) {
+                console.log('Login-Daten überprüfen');
+                
+                // Login prüfen mit gespeicherten Daten
+                if (username === loginConfig.username && password === loginConfig.password) {
+                    console.log('Login erfolgreich');
+                    
+                    // Reset failed attempts
+                    loginConfig.failedAttempts = 0;
+                    loginConfig.lockedUntil = null;
+                    localStorage.setItem('loginConfig', JSON.stringify(loginConfig));
+                    
+                    // Login-Daten speichern
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    localStorage.setItem('adminLoginTime', new Date().toISOString());
+                    
+                    // "Angemeldet bleiben" speichern
+                    if (document.getElementById('remember').checked) {
+                        localStorage.setItem('adminRemember', 'true');
+                    }
+                    
+                    // Erfolgsanzeige und Weiterleitung
+                    showSuccessAndRedirect();
+                    
+                } else {
+                    console.log('Login fehlgeschlagen');
+                    
+                    // Failed attempts erhöhen
+                    loginConfig.failedAttempts = (loginConfig.failedAttempts || 0) + 1;
+                    loginConfig.lastFailedAttempt = new Date().toISOString();
+                    
+                    // Nach 5 Versuchen locken für 15 Minuten
+                    if (loginConfig.failedAttempts >= 5) {
+                        const lockTime = new Date();
+                        lockTime.setMinutes(lockTime.getMinutes() + 15);
+                        loginConfig.lockedUntil = lockTime.toISOString();
+                        showError('Zu viele fehlgeschlagene Versuche. Konto für 15 Minuten gesperrt.');
+                    } else {
+                        showError('Falscher Benutzername oder Passwort!');
+                    }
+                    
+                    localStorage.setItem('loginConfig', JSON.stringify(loginConfig));
+                    updateFailedAttemptsDisplay();
+                }
+            }
+            
+            function showError(message) {
+                loading.style.display = 'none';
+                loginBtn.disabled = false;
+                
+                error.querySelector('span').textContent = message;
+                error.style.display = 'flex';
+                
+                // Error nach 5 Sekunden ausblenden
+                setTimeout(() => {
+                    error.style.display = 'none';
+                }, 5000);
+                
+                // Passwortfeld leeren
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+            }
+            
+            function showSuccessAndRedirect() {
+                loading.style.display = 'none';
+                success.style.display = 'flex';
+                
+                // Nach 1 Sekunde weiterleiten
+                setTimeout(() => {
+                    console.log('Weiterleitung zu admin-panel.html');
+                    window.location.href = 'admin-panel.html';
+                }, 1000);
+            }
+            
+            function isLoginLocked() {
+                if (!loginConfig.lockedUntil) return false;
+                
+                const lockTime = new Date(loginConfig.lockedUntil);
+                const now = new Date();
+                return now < lockTime;
+            }
+            
+            function checkLoginLock() {
+                if (isLoginLocked()) {
+                    const lockTime = new Date(loginConfig.lockedUntil);
+                    const now = new Date();
+                    const minutesLeft = Math.ceil((lockTime - now) / (1000 * 60));
+                    
+                    error.querySelector('span').textContent = 
+                        `Konto gesperrt. Noch ${minutesLeft} Minuten warten.`;
+                    error.style.display = 'flex';
+                    loginBtn.disabled = true;
+                }
+            }
+            
+            function updateFailedAttemptsDisplay() {
+                const attempts = loginConfig.failedAttempts || 0;
+                failedAttemptsEl.innerHTML = `
+                    <i class="fas fa-info-circle"></i>
+                    <span>${attempts} fehlgeschlagene Versuche</span>
+                `;
+                
+                if (attempts >= 3) {
+                    failedAttemptsEl.classList.add('warning');
+                } else {
+                    failedAttemptsEl.classList.remove('warning');
+                }
+            }
+            
+            // Enter-Taste im Passwortfeld
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    form.dispatchEvent(new Event('submit'));
+                }
+            });
+            
+            // Debug-Info
+            console.log('Login-Formular bereit');
+            
+            // Auto-Fill für Entwicklung (ENTFERNEN FÜR PRODUKTION!)
+            // document.getElementById('username').value = loginConfig.username;
+            // document.getElementById('password').value = loginConfig.password;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservierung Bestätigt</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .confirmation-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        
+        .confirmation-icon {
+            font-size: 80px;
+            color: #4CAF50;
+            margin-bottom: 30px;
+        }
+        
+        .confirmation-details {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            text-align: left;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .confirmation-details h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .detail-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            color: #34495e;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-print {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.3s;
+        }
+        
+        .btn-print:hover {
+            background: #2980b9;
+        }
+        
+        .confirmation-note {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e8f4fd;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+            font-size: 0.95rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-check-circle"></i> Reservierung Bestätigt</h1>
+            <p class="subtitle">Vielen Dank für Ihre Buchung!</p>
+            <div class="progress">
+                <div class="step">1. Datum & Sitz</div>
+                <div class="step">2. Ihre Daten</div>
+                <div class="step active">3. Bestätigung</div>
+            </div>
+        </header>
+
+        <main class="confirmation-container">
+            <div class="confirmation-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            
+            <h2>Ihre Reservierung wurde erfolgreich gebucht!</h2>
+            <p>Sie erhalten in Kürze eine Bestätigungs-Email mit allen Details.</p>
+            
+            <div class="confirmation-details" id="confirmationDetails">
+                <!-- Wird via JavaScript gefüllt -->
+            </div>
+            
+            <div class="confirmation-note">
+                <p><strong><i class="fas fa-info-circle"></i> Wichtige Hinweise:</strong></p>
+                <p>Bitte bewahren Sie Ihre Reservierungsnummer auf. Sie benötigen diese bei Ihrer Ankunft.</p>
+                <p>Ihre Reservierung hat den Status <strong>"Ausstehend"</strong> und wird vom Administrator bestätigt.</p>
+                <p>Bei Fragen kontaktieren Sie uns bitte unter info@example.com</p>
+            </div>
+            
+            <div class="actions">
+                <button class="btn-print" onclick="window.print()">
+                    <i class="fas fa-print"></i> Bestätigung drucken
+                </button>
+                <button class="btn-primary" onclick="window.location.href='index.html'">
+                    <i class="fas fa-home"></i> Neue Reservierung
+                </button>
+            </div>
+        </main>
+        
+        <div class="privacy-notice">
+            <p><i class="fas fa-shield-alt"></i> <strong>Datenschutz:</strong> Ihre Daten werden sicher gespeichert und nur für die Reservierungsabwicklung verwendet.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Letzte Reservierung aus localStorage laden
+            const reservations = JSON.parse(localStorage.getItem('reservations')) || [];
+            const lastReservation = reservations[reservations.length - 1];
+            const detailsEl = document.getElementById('confirmationDetails');
+            
+            if (lastReservation) {
+                // Status-Farbe bestimmen
+                const status = lastReservation.status || 'ausstehend';
+                const statusClass = status === 'bestätigt' ? 'status-confirmed' : 'status-pending';
+                const statusText = status === 'bestätigt' ? 'Bestätigt' : 'Ausstehend';
+                
+                // Sitze oder Gruppen anzeigen
+                const seatsOrGroups = lastReservation.groups || lastReservation.seats;
+                const seatsText = Array.isArray(seatsOrGroups) ? seatsOrGroups.join(', ') : seatsOrGroups;
+                
+                detailsEl.innerHTML = `
+                    <h3><i class="fas fa-receipt"></i> Ihre Reservierungsdetails</h3>
+                    <div class="detail-item">
+                        <div class="detail-label">Reservierungsnummer</div>
+                        <div class="detail-value">${lastReservation.reservationNumber || 'RSV-' + Date.now().toString().slice(-8)}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Datum</div>
+                        <div class="detail-value">${lastReservation.dateFormatted || lastReservation.date}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Sitze/Gruppen</div>
+                        <div class="detail-value">${seatsText}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Name</div>
+                        <div class="detail-value">${lastReservation.firstName || ''} ${lastReservation.lastName || ''}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">${lastReservation.email || ''}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Gesamtbetrag</div>
+                        <div class="detail-value">${lastReservation.total || 'Kostenlos'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                            ${status === 'ausstehend' ? '<br><small>Ihre Reservierung wird vom Administrator überprüft und bestätigt.</small>' : ''}
+                        </div>
+                    </div>
+                `;
+            } else {
+                detailsEl.innerHTML = `
+                    <h3><i class="fas fa-exclamation-triangle"></i> Keine Reservierungsdaten gefunden</h3>
+                    <p>Bitte starten Sie eine neue Reservierung.</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

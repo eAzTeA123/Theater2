@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Reservierungssystem</title>
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Kalender Styling */
+        .calendar-picker {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .calendar-header button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .calendar-day {
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+            padding: 5px;
+        }
+        
+        .calendar-dates {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        
+        .calendar-date {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .calendar-date:hover {
+            background: #f0f0f0;
+        }
+        
+        .calendar-date.selected {
+            background: #4CAF50;
+            color: white;
+            border-color: #388e3c;
+        }
+        
+        .calendar-date.blocked {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+        
+        .calendar-date.disabled {
+            background: #f5f5f5;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .date-selection-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        /* Gruppen-Show Vorschau */
+        .group-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .group-item {
+            width: 100px;
+            height: 100px;
+            background: #e8f5e9;
+            border: 2px solid #c8e6c9;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .group-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2e7d32;
+        }
+        
+        .group-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .group-slot {
+            width: 20px;
+            height: 20px;
+            background: #c8e6c9;
+            border-radius: 3px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Toggle Switch für Show-Typ */
+        .show-type-toggle {
+            display: flex;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .show-type-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .show-type-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        /* Color Preview */
+        .color-preview {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .color-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+        }
+        
+        /* Login Settings */
+        .login-settings {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #e1e5e9;
+        }
+        
+        .security-level {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        /* Export/Import */
+        .data-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .data-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Chart */
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        /* Password Strength */
+        .password-strength {
+            height: 5px;
+            background: #eee;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .password-strength.weak .password-strength-bar {
+            width: 33%;
+            background: #e74c3c;
+        }
+        
+        .password-strength.medium .password-strength-bar {
+            width: 66%;
+            background: #f39c12;
+        }
+        
+        .password-strength.strong .password-strength-bar {
+            width: 100%;
+            background: #27ae60;
+        }
+        
+        /* Fix für Elemente die nicht existieren */
+        #saveSystemBtn, #systemVersion, #browserInfo, #localStorageInfo, #lastUpdate {
+            display: block !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <i class="fas fa-spinner"></i>
+        <p>Admin-Panel wird geladen...</p>
+    </div>
+    
+    <div class="admin-container" id="adminContainer" style="display: none;">
+        <!-- Navigation -->
+        <nav class="admin-nav">
+            <div class="nav-container">
+                <div class="nav-header">
+                    <i class="fas fa-cogs"></i>
+                    <h1>Admin Panel <span class="subtitle">Reservierungssystem</span></h1>
+                </div>
+                <div class="nav-user">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="adminUsername">Administrator</span>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="admin-main">
+            <!-- Sidebar -->
+            <aside class="admin-sidebar">
+                <div class="sidebar-menu">
+                    <button class="menu-item active" data-tab="dashboard">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </button>
+                    <button class="menu-item" data-tab="general">
+                        <i class="fas fa-cog"></i> Allgemein
+                    </button>
+                    <button class="menu-item" data-tab="dates">
+                        <i class="fas fa-calendar-alt"></i> Termine
+                    </button>
+                    <button class="menu-item" data-tab="seats">
+                        <i class="fas fa-chair"></i> Sitzplan
+                    </button>
+                    <button class="menu-item" data-tab="prices">
+                        <i class="fas fa-euro-sign"></i> Preise
+                    </button>
+                    <button class="menu-item" data-tab="design">
+                        <i class="fas fa-paint-brush"></i> Design
+                    </button>
+                    <button class="menu-item" data-tab="reservations">
+                        <i class="fas fa-ticket-alt"></i> Reservierungen
+                    </button>
+                    <button class="menu-item" data-tab="system">
+                        <i class="fas fa-server"></i> System
+                    </button>
+                </div>
+                
+                <div class="sidebar-footer">
+                    <div class="system-info">
+                        <p><i class="fas fa-database"></i> <span id="reservationCount">0</span> Reservierungen</p>
+                        <p><i class="fas fa-calendar-check"></i> <span id="activeEvents">0</span> aktive Termine</p>
+                    </div>
+                    <button class="btn-secondary" id="saveAllBtn">
+                        <i class="fas fa-save"></i> Alle Änderungen speichern
+                    </button>
+                </div>
+            </aside>
+            
+            <!-- Hauptinhalt -->
+            <main class="admin-content">
+                <!-- Dashboard -->
+                <div class="tab-content active" id="dashboard">
+                    <div class="tab-header">
+                        <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                        <p>Übersicht und Statistiken</p>
+                    </div>
+                    
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <h4><i class="fas fa-ticket-alt"></i> Gesamte Reservierungen</h4>
+                            <div class="stat-number" id="totalReservations">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4><i class="fas fa-users"></i> Heute gebucht</h4>
+                            <div class="stat-number" id="todayReservations">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4><i class="fas fa-chair"></i> Belegte Sitze</h4>
+                            <div class="stat-number" id="occupiedSeats">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4><i class="fas fa-calendar"></i> Verfügbare Termine</h4>
+                            <div class="stat-number" id="availableDates">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4><i class="fas fa-euro-sign"></i> Umsatz</h4>
+                            <div class="stat-number" id="totalRevenue">€0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4><i class="fas fa-user-clock"></i> Aktive Benutzer</h4>
+                            <div class="stat-number" id="activeUsers">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-reservations">
+                        <h3><i class="fas fa-history"></i> Letzte Reservierungen</h3>
+                        <div class="reservations-list">
+                            <table class="reservations-table">
+                                <thead>
+                                    <tr>
+                                        <th>Datum</th>
+                                        <th>Name</th>
+                                        <th>Sitze/Gruppen</th>
+                                        <th>Betrag</th>
+                                        <th>Status</th>
+                                        <th>Aktionen</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentReservationsTable">
+                                    <!-- Wird via JS gefüllt -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Allgemeine Einstellungen -->
+                <div class="tab-content" id="general">
+                    <div class="tab-header">
+                        <h2><i class="fas fa-cog"></i> Allgemeine Einstellungen</h2>
+                        <p>Grundeinstellungen des Systems</p>
+                    </div>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <h3><i class="fas fa-info-circle"></i> Veranstaltungsdetails</h3>
+                            <div class="form-group">
+                                <label for="eventName">Veranstaltungsname</label>
+                                <input type="text" id="eventName" class="form-control" placeholder="Meine Veranstaltung">
+                            </div>
+                            <div class="form-group">
+                                <label for="eventLocation">Veranstaltungsort</label>
+                                <input type="text" id="eventLocation" class="form-control" placeholder="Stadthalle">
+                            </div>
+                            <div class="form-group">
+                                <label for="eventTime">Beginn (Uhrzeit)</label>
+                                <input type="time" id="eventTime" class="form-control" value="19:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="doorsOpen">Einlass (Uhrzeit)</label>
+                                <input type="time" id="doorsOpen" class="form-control" value="18:00">
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3><i class="fas fa-power-off"></i> Systemstatus</h3>
+                            <div class="form-group">
+                                <label class="switch-label">
+                                    <span class="switch">
+                                        <input type="checkbox" id="systemActive" checked>
+                                        <span class="slider"></span>
+                                    </span>
+                                    System aktiv
+                                </label>
+                                <p class="setting-hint">Wenn deaktiviert, sind keine Buchungen möglich</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="maxDailyReservations">Max. Reservierungen pro Tag</label>
+                                <input type="number" id="maxDailyReservations" class="form-control" min="1" max="1000" value="50">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="maxReservationsPerUser">Max. Reservierungen pro Benutzer</label>
+                                <input type="number" id="maxReservationsPerUser" class="form-control" min="1" max="100" value="3">
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card wide">
+                            <h3><i class="fas fa-language"></i> Sprache & Region</h3>
+                            <div class="form-group">
+                                <label for="language">Sprache</label>
+                                <select id="language" class="form-control">
+                                    <option value="de" selected>Deutsch</option>
+                                    <option value="en">Englisch</option>
+                                    <option value="fr">Französisch</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="timezone">Zeitzone</label>
+                                <select id="timezone" class="form-control">
+                                    <option value="Europe/Berlin" selected>Berlin (GMT+1)</option>
+                                    <option value="Europe/London">London (GMT+0)</option>
+                                    <option value="America/New_York">New York (GMT-5)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="dateFormat">Datumsformat</label>
+                                <select id="dateFormat" class="form-control">
+                                    <option value="de-DE" selected>TT.MM.JJJJ</option>
+                                    <option value="en-US">MM/DD/YYYY</option>
+                                    <option value="en-GB">DD/MM/YYYY</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-action" id="saveGeneralBtn">
+                        <i class="fas fa-save"></i> Allgemeine Einstellungen speichern
+                    </button>
+                </div>
+                
+                <!-- Termine -->
+                <div class="tab-content" id="dates">
+                    <div class="tab-header">
+                        <h2><i class="fas fa-calendar-alt"></i> Termine</h2>
+                        <p>Verfügbare Termine und Blockierungen einstellen</p>
+                    </div>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-card wide">
+                            <h3><i class="fas fa-calendar-check"></i> Verfügbare Termine auswählen</h3>
+                            <div class="calendar-picker">
+                                <div class="calendar-header">
+                                    <button id="calendarPrevMonth"><i class="fas fa-chevron-left"></i></button>
+                                    <h4 id="calendarMonth">Juli 2024</h4>
+                                    <button id="calendarNextMonth"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                                
+                                <div class="calendar-days">
+                                    <div class="calendar-day">Mo</div>
+                                    <div class="calendar-day">Di</div>
+                                    <div class="calendar-day">Mi</div>
+                                    <div class="calendar-day">Do</div>
+                                    <div class="calendar-day">Fr</div>
+                                    <div class="calendar-day">Sa</div>
+                                    <div class="calendar-day">So</div>
+                                </div>
+                                
+                                <div class="calendar-dates" id="calendarDates">
+                                    <!-- Kalender wird via JS gefüllt -->
+                                </div>
+                                
+                                <div class="date-selection-actions">
+                                    <button class="btn-small" id="selectAllDates">
+                                        <i class="fas fa-check-square"></i> Alle auswählen
+                                    </button>
+                                    <button class="btn-small" id="clearDateSelection">
+                                        <i class="fas fa-times-circle"></i> Auswahl löschen
+                                    </button>
+                                    <button class="btn-small" id="blockSelectedDates">
+                                        <i class="fas fa-ban"></i> Ausgewählte blockieren
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Ausgewählte Termine:</label>
+                                <div class="selected-dates-list" id="selectedDatesList">
+                                    <!-- Ausgewählte Termine werden hier angezeigt -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3><i class="fas fa-calendar-week"></i> Wochentage</h3>
+                            <div class="weekday-selector">
+                                <label>
+                                    <input type="checkbox" class="weekday-checkbox" value="1"> Montag
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="weekday-checkbox" value="2"> Dienstag
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="weekday-checkbox" value="3"> Mittwoch
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="weekday-checkbox" value="4"> Donnerstag
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="weekday-checkbox" value="5"> Freitag
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="weekday-checkbox" value="6"> Samstag
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="weekday-checkbox" value="0"> Sonntag
+                                </label>
+                            </div>
+                            <p class="setting-hint">Nur an ausgewählten Wochentagen sind Termine verfügbar</p>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3><i class="fas fa-clock"></i> Zeitfenster</h3>
+                            <div class="form-group">
+                                <label for="bookingStart">Buchungsbeginn</label>
+                                <input type="date" id="bookingStart" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="bookingEnd">Buchungsende</label>
+                                <input type="date" id="bookingEnd" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="maxAdvanceDays">Max. Vorausbuchung (Tage)</label>
+                                <input type="number" id="maxAdvanceDays" class="form-control" min="1" max="365" value="60">
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card wide">
+                            <h3><i class="fas fa-ban"></i> Blockierte Termine</h3>
+                            <div class="form-group">
+                                <label for="blockDateInput">Einzelnes Datum blockieren</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="date" id="blockDateInput" class="form-control">
+                                    <button type="button" class="btn-small" id="addBlockedDateBtn">
+                                        <i class="fas fa-plus"></i> Blockieren
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="blocked-dates-list">
+                                <h4>Blockierte Termine:</h4>
+                                <ul id="blockedDatesList">
+                                    <!-- Blockierte Termine werden hier angezeigt -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-action" id="saveDatesBtn">
+                        <i class="fas fa-save"></i> Termin-Einstellungen speichern
+                    </button>
+                </div>
+                
+                <!-- Sitzplan -->
+                <div class="tab-content" id="seats">
+                    <div class="tab-header">
+                        <h2><i class="fas fa-chair"></i> Sitzplan</h2>
+                        <p>Sitzplan-Typ und Layout einstellen</p>
+                    </div>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <h3><i class="fas fa-cogs"></i> Sitzplan-Typ</h3>
+                            <div class="show-type-toggle">
+                                <button type="button" class="show-type-btn active" data-show-type="stage">
+                                    <i class="fas fa-theater-masks"></i> Bühnen-Show
+                                </button>
+                                <button type="button" class="show-type-btn" data-show-type="group">
+                                    <i class="fas fa-users"></i> Gruppen-Show
+                                </button>
+                            </div>
+                            <p class="setting-hint">Wählen Sie den Typ der Veranstaltung</p>
+                        </div>
+                        
+                        <!-- Bühnen-Show Einstellungen -->
+                        <div class="setting-card" id="stageSettings">
+                            <h3><i class="fas fa-theater-masks"></i> Bühnen-Show Einstellungen</h3>
+                            <div class="form-group">
+                                <label for="seatRows">Anzahl Reihen</label>
+                                <input type="number" id="seatRows" class="form-control" min="1" max="20" value="8">
+                            </div>
+                            <div class="form-group">
+                                <label for="seatsPerRow">Sitze pro Reihe</label>
+                                <input type="number" id="seatsPerRow" class="form-control" min="1" max="30" value="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="stageName">Bühnenname</label>
+                                <input type="text" id="stageName" class="form-control" value="BÜHNE">
+                            </div>
+                            <div class="form-group">
+                                <label for="aislePosition">Gang-Position</label>
+                                <select id="aislePosition" class="form-control">
+                                    <option value="none">Kein Gang</option>
+                                    <option value="middle" selected>Mittig</option>
+                                    <option value="left">Links</option>
+                                    <option value="right">Rechts</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Gruppen-Show Einstellungen -->
+                        <div class="setting-card" id="groupSettings" style="display: none;">
+                            <h3><i class="fas fa-users"></i> Gruppen-Show Einstellungen</h3>
+                            <div class="form-group">
+                                <label for="groupCount">Anzahl Gruppen</label>
+                                <input type="number" id="groupCount" class="form-control" min="1" max="50" value="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="slotsPerGroup">Slots pro Gruppe</label>
+                                <input type="number" id="slotsPerGroup" class="form-control" min="1" max="20" value="6">
+                            </div>
+                            <div class="form-group">
+                                <label for="groupName">Gruppenname</label>
+                                <input type="text" id="groupName" class="form-control" value="Tisch">
+                            </div>
+                            <div class="form-group">
+                                <label for="groupLayout">Gruppen-Layout</label>
+                                <select id="groupLayout" class="form-control">
+                                    <option value="grid">Gitter</option>
+                                    <option value="circle">Kreisförmig</option>
+                                    <option value="rows">Reihen</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3><i class="fas fa-ticket-alt"></i> Buchungslimits</h3>
+                            <div class="form-group">
+                                <label for="maxSeatsPerBooking">Max. Sitze/Gruppen pro Buchung</label>
+                                <input type="number" id="maxSeatsPerBooking" class="form-control" min="1" max="50" value="8">
+                            </div>
+                            <div class="form-group">
+                                <label for="minSeatsPerBooking">Min. Sitze/Gruppen pro Buchung</label>
+                                <input type="number" id="minSeatsPerBooking" class="form-control" min="1" max="10" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="seatSelectionMode">Auswahlmodus</label>
+                                <select id="seatSelectionMode" class="form-control">
+                                    <option value="single">Einzelne Sitze</option>
+                                    <option value="multiple" selected>Mehrere Sitze</option>
+                                    <option value="row">Ganze Reihen</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card wide">
+                            <h3><i class="fas fa-eye"></i> Vorschau</h3>
+                            <div class="seat-preview">
+                                <div class="preview-stage" id="previewStage">BÜHNE</div>
+                                <div class="preview-grid" id="seatPreviewGrid">
+                                    <!-- Vorschau wird via JS gefüllt -->
+                                </div>
+                                <div class="group-preview" id="groupPreview" style="display: none;">
+                                    <!-- Gruppen-Vorschau wird via JS gefüllt -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-action" id="saveSeatsBtn">
+                        <i class="fas fa-save"></i> Sitzplan-Einstellungen speichern
+                    </button>
+                </div>
+                
+                <!-- Preise -->
+                <div class="tab-content" id="prices">
+                    <div class="tab-header">
+                        <h2><i class="fas fa-euro-sign"></i> Preise</h2>
+                        <p>Preise für verschiedene Kategorien</p>
+                    </div>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <h3><i class="fas fa-tag"></i> Allgemein</h3>
+                            <div class="form-group">
+                                <label class="switch-label">
+                                    <span class="switch">
+                                        <input type="checkbox" id="freeEvent" checked>
+                                        <span class="slider"></span>
+                                    </span>
+                                    Kostenlose Veranstaltung
+                                </label>
+                                <p class="setting-hint">Wenn aktiviert, sind alle Sitze kostenlos</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="currency">Währung</label>
+                                <select id="currency" class="form-control">
+                                    <option value="EUR" selected>Euro (€)</option>
+                                    <option value="USD">US Dollar ($)</option>
+                                    <option value="CHF">Schweizer Franken (CHF)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="taxRate">Steuersatz (%)</label>
+                                <input type="number" id="taxRate" class="form-control" min="0" max="50" step="0.1" value="19">
+                            </div>
+                        </div>
+                        
+                        <!-- Preise für Bühnen-Show -->
+                        <div class="setting-card" id="stagePrices">
+                            <h3><i class="fas fa-theater-masks"></i> Preise Bühnen-Show</h3>
+                            <div class="form-group">
+                                <label for="seatPrice">Standard Sitz (€)</label>
+                                <input type="number" id="seatPrice" class="form-control" min="0" step="0.5" value="10" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="vipPrice">VIP Sitz (€)</label>
+                                <input type="number" id="vipPrice" class="form-control" min="0" step="0.5" value="15" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="vipRows">VIP Reihen</label>
+                                <input type="number" id="vipRows" class="form-control" min="0" max="10" value="2">
+                                <p class="setting-hint">Anzahl der Reihen mit VIP-Preisen (ab Bühne)</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Preise für Gruppen-Show -->
+                        <div class="setting-card" id="groupPrices" style="display: none;">
+                            <h3><i class="fas fa-users"></i> Preise Gruppen-Show</h3>
+                            <div class="form-group">
+                                <label for="groupPrice">Preis pro Gruppe (€)</label>
+                                <input type="number" id="groupPrice" class="form-control" min="0" step="0.5" value="50" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="slotPrice">Preis pro Slot (€)</label>
+                                <input type="number" id="slotPrice" class="form-control" min="0" step="0.5" value="8" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="discountGroups">Rabatt ab Gruppen</label>
+                                <input type="number" id="discountGroups" class="form-control" min="0" max="20" value="5">
+                                <p class="setting-hint">Anzahl Gruppen für Mengenrabatt</p>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3><i class="fas fa-credit-card"></i> Zahlungsmethoden</h3>
+                            <div class="form-group">
+                                <label class="switch-label">
+                                    <span class="switch">
+                                        <input type="checkbox" id="paymentCash" checked>
+                                        <span class="slider"></span>
+                                    </span>
+                                    Barzahlung vor Ort
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="switch-label">
+                                    <span class="switch">
+                                        <input type="checkbox" id="paymentCard" checked>
+                                        <span class="slider"></span>
+                                    </span>
+                                    Kartenzahlung vor Ort
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="switch-label">
+                                    <span class="switch">
+                                        <input type="checkbox" id="paymentOnline">
+                                        <span class="slider"></span>
+                                    </span>
+                                    Online-Zahlung
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="switch-label">
+                                    <span class="switch">
+                                        <input type="checkbox" id="invoiceRequired">
+                                        <span class="slider"></span>
+                                    </span>
+                                    Rechnung erforderlich
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card wide">
+                            <h3><i class="fas fa-percent"></i> Rabatte & Sonderaktionen</h3>
+                            <div class="form-group">
+                                <label for="earlyBirdDiscount">Frühbucher-Rabatt (%)</label>
+                                <input type="number" id="earlyBirdDiscount" class="form-control" min="0" max="100" value="10">
+                                <p class="setting-hint">Rabatt bei Buchung mehr als 30 Tage vorher</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="groupDiscount">Gruppenrabatt (%)</label>
+                                <input type="number" id="groupDiscount" class="form-control" min="0" max="100" value="15">
+                                <p class="setting-hint">Rabatt ab 8 Personen/Gruppen</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-action" id="savePricesBtn">
+                        <i class="fas fa-save"></i> Preis-Einstellungen speichern
+                    </button>
+                </div>
+                
+                <!-- Design -->
+                <div class="tab-content" id="design">
+                    <div class="tab-header">
+                        <h2><i class="fas fa-paint-brush"></i> Design</h2>
+                        <p>Erscheinungsbild der Website</p>
+                    </div>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <h3><i class="fas fa-palette"></i> Farben</h3>
+                            <div class="form-group">
+                                <label for="primaryColor">Primärfarbe</label>
+                                <input type="color" id="primaryColor" class="form-control color-picker" value="#4CAF50">
+                            </div>
+                            <div class="form-group">
+                                <label for="secondaryColor">Sekundärfarbe</label>
+                                <input type="color" id="secondaryColor" class="form-control color-picker" value="#3498db">
+                            </div>
+                            <div class="form-group">
+                                <label for="backgroundColor">Hintergrundfarbe</label>
+                                <input type="color" id="backgroundColor" class="form-control color-picker" value="#f8f9fa">
+                            </div>
+                            
+                            <div class="color-preview">
+                                <div class="color-box" style="background: #4CAF50;"></div>
+                                <div class="color-box" style="background: #3498db;"></div>
+                                <div class="color-box" style="background: #f8f9fa; border: 1px solid #ccc;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3><i class="fas fa-font"></i> Typografie</h3>
+                            <div class="form-group">
+                                <label for="fontFamily">Schriftart</label>
+                                <select id="fontFamily" class="form-control">
+                                    <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" selected>Segoe UI</option>
+                                    <option value="Arial, sans-serif">Arial</option>
+                                    <option value="'Helvetica Neue', sans-serif">Helvetica</option>
+                                    <option value="'Roboto', sans-serif">Roboto</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fontSize">Schriftgröße Basis</label>
+                                <input type="number" id="fontSize" class="form-control" min="12" max="24" value="16">
+                                <p class="setting-hint">in Pixeln</p>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card wide">
+                            <h3><i class="fas fa-file-alt"></i> Texte & Inhalte</h3>
+                            <div class="form-group">
+                                <label for="welcomeText">Willkommenstext</label>
+                                <textarea id="welcomeText" class="form-control" rows="3" placeholder="Willkommen zu unserer Veranstaltung!"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmationText">Bestätigungstext</label>
+                                <textarea id="confirmationText" class="form-control" rows="3" placeholder="Vielen Dank für Ihre Reservierung!"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="agbText">AGB Text</label>
+                                <textarea id="agbText" class="form-control" rows="5" placeholder="Allgemeine Geschäftsbedingungen..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="privacyText">Datenschutzerklärung</label>
+                                <textarea id="privacyText" class="form-control" rows="5" placeholder="Datenschutzerklärung..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3><i class="fas fa-image"></i> Bilder & Logos</h3>
+                            <div class="form-group">
+                                <label for="logoUrl">Logo URL</label>
+                                <input type="text" id="logoUrl" class="form-control" placeholder="https://beispiel.de/logo.png">
+                            </div>
+                            <div class="form-group">
+                                <label for="faviconUrl">Favicon URL</label>
+                                <input type="text" id="faviconUrl" class="form-control" placeholder="https://beispiel.de/favicon.ico">
+                            </div>
+                            <div class="form-group">
+                                <label for="backgroundImage">Hintergrundbild URL</label>
+                                <input type="text" id="backgroundImage" class="form-control" placeholder="https://beispiel.de/hintergrund.jpg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-action" id="saveDesignBtn">
+                        <i class="fas fa-save"></i> Design-Einstellungen speichern
+                    </button>
+                </div>
+                
+                <!-- Reservierungen -->
+                <div class="tab-content" id="reservations">
+                    <div class="tab-header">
+                        <h2><i class="fas fa-ticket-alt"></i> Reservierungen</h2>
+                        <p>Verwaltung aller Buchungen</p>
+                    </div>
+                    
+                    <div class="reservations-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchReservations" placeholder="Nach Name, Email oder Nummer suchen...">
+                        </div>
+                        
+                        <div class="filter-controls">
+                            <select id="filterStatus" class="form-control">
+                                <option value="all">Alle Status</option>
+                                <option value="confirmed">Bestätigt</option>
+                                <option value="pending">Ausstehend</option>
+                                <option value="cancelled">Storniert</option>
+                            </select>
+                            
+                            <input type="date" id="filterDate" class="form-control">
+                            
+                            <button class="btn-small" id="exportReservationsBtn">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="reservations-list">
+                        <table class="reservations-table">
+                            <thead>
+                                <tr>
+                                    <th>Nummer</th>
+                                    <th>Datum</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Sitze/Gruppen</th>
+                                    <th>Betrag</th>
+                                    <th>Status</th>
+                                    <th>Buchungszeit</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservationsTable">
+                                <!-- Wird via JS gefüllt -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="reservation-stats">
+                        <div class="stat-card">
+                            <h4><i class="fas fa-check-circle"></i> Bestätigte</h4>
+                            <div class="stat-number" id="confirmedCount">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4><i class="fas fa-clock"></i> Ausstehende</h4>
+                            <div class="stat-number" id="pendingCount">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4><i class="fas fa-times-circle"></i> Stornierte</h4>
+                            <div class="stat-number" id="cancelledCount">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4><i class="fas fa-euro-sign"></i> Gesamtumsatz</h4>
+                            <div class="stat-number" id="totalRevenueReservations">€0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="data-actions">
+                        <button class="btn-action" id="exportAllBtn">
+                            <i class="fas fa-file-export"></i> Alle Reservierungen exportieren (JSON)
+                        </button>
+                        <button class="btn-action danger" id="deleteAllReservationsBtn">
+                            <i class="fas fa-trash"></i> Alle Reservierungen löschen
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- System -->
+                <div class="tab-content" id="system">
+                    <div class="tab-header">
+                        <h2><i class="fas fa-server"></i> System</h2>
+                        <p>Systemeinstellungen und Wartung</p>
+                    </div>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <h3><i class="fas fa-envelope"></i> Email-Einstellungen</h3>
+                            <div class="form-group">
+                                <label for="emailSender">Absender Name</label>
+                                <input type="text" id="emailSender" class="form-control" value="Reservierungssystem">
+                            </div>
+                            <div class="form-group">
+                                <label for="emailFrom">Absender Email</label>
+                                <input type="email" id="emailFrom" class="form-control" placeholder="noreply@beispiel.de">
+                            </div>
+                            <div class="form-group">
+                                <label for="smtpHost">SMTP Host</label>
+                                <input type="text" id="smtpHost" class="form-control" placeholder="smtp.beispiel.de">
+                            </div>
+                            <div class="form-group">
+                                <label for="smtpPort">SMTP Port</label>
+                                <input type="number" id="smtpPort" class="form-control" value="587">
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3><i class="fas fa-chart-line"></i> Analytics</h3>
+                            <div class="form-group">
+                                <label class="switch-label">
+                                    <span class="switch">
+                                        <input type="checkbox" id="analyticsEnabled">
+                                        <span class="slider"></span>
+                                    </span>
+                                    Analytics aktivieren
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="gaId">Google Analytics ID</label>
+                                <input type="text" id="gaId" class="form-control" placeholder="UA-XXXXXXXXX-X" disabled>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card wide">
+                            <h3><i class="fas fa-database"></i> Datenverwaltung</h3>
+                            <div class="data-actions">
+                                <button class="btn-action" id="backupDataBtn">
+                                    <i class="fas fa-save"></i> Backup erstellen
+                                </button>
+                                <button class="btn-action" id="restoreDataBtn">
+                                    <i class="fas fa-upload"></i> Backup wiederherstellen
+                                </button>
+                                <button class="btn-action" id="exportSettingsBtn">
+                                    <i class="fas fa-file-export"></i> Einstellungen exportieren
+                                </button>
+                                <button class="btn-action" id="importSettingsBtn">
+                                    <i class="fas fa-file-import"></i> Einstellungen importieren
+                                </button>
+                            </div>
+                            
+                            <div class="form-group" style="margin-top: 20px;">
+                                <label for="autoBackup">Automatisches Backup (Tage)</label>
+                                <input type="number" id="autoBackup" class="form-control" min="0" max="30" value="7">
+                                <p class="setting-hint">0 = kein automatisches Backup</p>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3><i class="fas fa-info-circle"></i> Systeminformationen</h3>
+                            <div class="system-info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Version</span>
+                                    <span class="info-value" id="systemVersion">1.0.0</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Browser</span>
+                                    <span class="info-value" id="browserInfo">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">LocalStorage</span>
+                                    <span class="info-value" id="localStorageInfo">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Letztes Update</span>
+                                    <span class="info-value" id="lastUpdate">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3><i class="fas fa-redo"></i> Systemaktionen</h3>
+                            <div class="form-group">
+                                <button class="btn-action" id="clearCacheBtn">
+                                    <i class="fas fa-broom"></i> Cache leeren
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn-action" id="resetSettingsBtn">
+                                    <i class="fas fa-undo"></i> Auf Standard zurücksetzen
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn-action danger" id="resetAllBtn">
+                                    <i class="fas fa-bomb"></i> Alles zurücksetzen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-action" id="saveSystemBtn">
+                        <i class="fas fa-save"></i> System-Einstellungen speichern
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Erfolgsmeldung -->
+    <div class="success-message" id="successMessage">
+        <i class="fas fa-check-circle"></i>
+        <span>Einstellungen gespeichert!</span>
+    </div>
+    
+    <!-- Bestätigungsdialog -->
+    <div class="confirm-dialog" id="confirmDialog">
+        <div class="dialog-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Bestätigung</h3>
+            <p id="dialogMessage">Sind Sie sicher?</p>
+            <div class="dialog-actions">
+                <button class="btn-secondary" id="dialogCancel">Abbrechen</button>
+                <button class="btn-danger" id="dialogConfirm">Bestätigen</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- File Input für Import -->
+    <input type="file" id="fileInput" style="display: none;" accept=".json">
+    
+    <script src="admin-script.js"></script>
+</body>
+</html>

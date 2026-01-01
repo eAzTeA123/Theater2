@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservierung - Datum & Sitzplatz</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calendar-alt"></i> Veranstaltungsreservierung</h1>
+            <p class="subtitle" id="welcomeText">Wählen Sie Datum und Sitzplatz</p>
+            <div class="progress">
+                <div class="step active">1. Datum & Sitz</div>
+                <div class="step">2. Ihre Daten</div>
+                <div class="step">3. Bestätigung</div>
+            </div>
+        </header>
+
+        <main class="main-grid">
+            <section class="calendar-section">
+                <h2><i class="far fa-calendar"></i> Datum wählen</h2>
+                <div class="calendar">
+                    <div class="calendar-header">
+                        <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                        <h3 id="currentMonth">Juli 2024</h3>
+                        <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    
+                    <div class="weekdays">
+                        <div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div>
+                    </div>
+                    
+                    <div class="days" id="calendarDays"></div>
+                </div>
+                
+                <div class="selected-info">
+                    <h3><i class="far fa-check-circle"></i> Ausgewählt:</h3>
+                    <p id="selectedDate">Kein Datum gewählt</p>
+                    <p class="hint">Bitte wählen Sie ein verfügbares Datum (grün markiert)</p>
+                </div>
+            </section>
+
+            <section class="seats-section disabled">
+                <h2><i class="fas fa-chair"></i> Sitzplatz wählen</h2>
+                
+                <div class="stage">
+                    <div class="stage-content" id="stageName">BÜHNE</div>
+                </div>
+                
+                <div class="seats-container">
+                    <div class="seats-grid" id="seatsGrid"></div>
+                </div>
+                
+                <div class="legend" id="legend"></div>
+            </section>
+        </main>
+
+        <footer class="summary">
+            <div class="summary-content">
+                <h3><i class="fas fa-receipt"></i> Zusammenfassung</h3>
+                <div class="summary-details">
+                    <p><strong>Datum:</strong> <span id="summaryDate">-</span></p>
+                    <p><strong>Sitze:</strong> <span id="summarySeats">Keine ausgewählt</span></p>
+                    <p><strong>Gesamt:</strong> <span id="summaryTotal">Kostenlos</span></p>
+                </div>
+                
+                <div class="navigation">
+                    <button id="nextBtn" class="btn-primary" disabled>
+                        <i class="fas fa-arrow-right"></i> Weiter zu Ihren Daten
+                    </button>
+                </div>
+            </div>
+        </footer>
+
+        <div class="privacy-notice">
+            <p><i class="fas fa-shield-alt"></i> <strong>Datenschutz:</strong> Wir speichern keine persönlichen Daten auf unserem Server. Ihre Reservierung wird direkt per Email bestätigt.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
